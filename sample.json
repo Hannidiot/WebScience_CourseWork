@@ -1,0 +1,88 @@
+[
+    {
+        "_id": 1486425030581969000,
+        "date": {
+            "$date": "2022-01-26T19:45:18Z"
+        },
+        "username": "RichartinFan",
+        "text": "Just posted a photo @ London, Unιted Kingdom https://t.co/t5HP1uwdEV",
+        "geoenabled": true,
+        "coordinates": {
+            "type": "Point",
+            "coordinates": [
+                -0.07939436,
+                51.47496745
+            ]
+        },
+        "location": "Devil's Island~",
+        "place_name": "Camberwell, London",
+        "place_country": "United Kingdom",
+        "country_code": "GB",
+        "place_coordinates": [
+            [
+                [
+                    -0.1114755,
+                    51.4194247
+                ],
+                [
+                    -0.0297308,
+                    51.4194247
+                ],
+                [
+                    -0.0297308,
+                    51.509947
+                ],
+                [
+                    -0.1114755,
+                    51.509947
+                ]
+            ]
+        ],
+        "hashtags": [],
+        "mentions": [],
+        "source": "Instagram"
+    },
+    {
+        "_id": 1486425474335076400,
+        "date": {
+            "$date": "2022-01-26T19:47:04Z"
+        },
+        "username": "CelebFitnessTV",
+        "text": "How to Make Sure Your COVID Test Isn't Fake https://t.co/ChDk74khj0 https://t.co/NGmfjXTPPN",
+        "geoenabled": true,
+        "coordinates": {
+            "type": "Point",
+            "coordinates": [
+                -0.18016398,
+                51.48217862
+            ]
+        },
+        "location": "United Kingdom",
+        "place_name": "Kensington, London",
+        "place_country": "United Kingdom",
+        "country_code": "GB",
+        "place_coordinates": [
+            [
+                [
+                    -0.2285894,
+                    51.4772246
+                ],
+                [
+                    -0.1497908,
+                    51.4772246
+                ],
+                [
+                    -0.1497908,
+                    51.5303477
+                ],
+                [
+                    -0.2285894,
+                    51.5303477
+                ]
+            ]
+        ],
+        "hashtags": [],
+        "mentions": [],
+        "source": "dlvr.it"
+    }
+]
