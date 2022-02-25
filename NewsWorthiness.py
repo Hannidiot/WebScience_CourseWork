@@ -1,0 +1,10 @@
+
+
+class NewsWorthiness:
+    listTerms = [
+
+    ]
+    
+    listSpam = [
+        
+    ]
