@@ -40,20 +40,23 @@ class GeoTweetProcessor:
 
         for i in range(len(self.rowPoints)):
             if latitude < self.rowPoints[i]:
-                row_index = len(self.rowPoints) - i - 1
+                # row_index = len(self.rowPoints) - i - 1
+                row_index = i - 1
                 break
         
         for i in range(len(self.columnPoints)):
             if longtitude < self.columnPoints[i]:
-                column_index = len(self.columnPoints) - i - 1
+                # column_index = len(self.columnPoints) - i - 1
+                column_index = i - 1
                 break
 
         return row_index, column_index
 
 
 def plot_heatmap(grids):
-    plt.imshow(grids)
+    sns.heatmap(grids, vmin=0, vmax=50)
     plt.show()
+
 
 if __name__ == '__main__':
     import json
@@ -72,9 +75,4 @@ if __name__ == '__main__':
     for sample in samples:
         processor.add_tweet(sample)
 
-    ax = sns.heatmap(processor.num_tweets_by_grid)
-    plt.show()
-    # with open('out.dat', 'w') as f:
-    #     processor.num_tweets_by_grid.tofile(f, format='%s')
-    
-    # plot_heatmap(processor.num_tweets_by_grid)
+    plot_heatmap(processor.num_tweets_by_grid)
