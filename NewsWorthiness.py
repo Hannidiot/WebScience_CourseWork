@@ -1,23 +1,22 @@
 import re
 
 
-from gensim.utils import simple_preprocess
 from nltk import word_tokenize, pos_tag
-from nltk.corpus import stopwords
 from functools import reduce
 from collections import Counter
 
 
 class TweetNewsWorthiness:
 
-    def __init__(self, high_quality_set, low_quality_set):
+    def __init__(self, high_quality_set, low_quality_set, most_common=20):
         self.high_quality_set = high_quality_set
         self.low_quality_set = low_quality_set
+        self._most_common = most_common
         self.create_scoring_model()
 
-    def generate_word_cnt(self, tweets, most_common=20):
+    def generate_word_cnt(self, tweets):
         tweets_content = [tweet['text'] for tweet in tweets]
-        data_words = list(self._process_words(tweets_content))
+        data_words = list(self._process_models(tweets_content))
         data_no_stopwords = reduce(lambda x, y: x + y, data_words)
         ctr = Counter(data_no_stopwords)
 
@@ -26,25 +25,28 @@ class TweetNewsWorthiness:
     def create_scoring_model(self):
         # create high quality word list
         self.hq_word_cnt = self.generate_word_cnt(self.high_quality_set)
-        self.list_term = self.hq_word_cnt.most_common(15)
+        self.list_term = self.hq_word_cnt.most_common(self._most_common)
 
         # create spam word list
         self.lq_word_cnt = self.generate_word_cnt(self.low_quality_set)
-        self.list_spam = self.lq_word_cnt.most_common(15)
+        self.list_spam = self.lq_word_cnt.most_common(self._most_common)
 
-    def _process_words(self, tweets_content):
-        for sent in tweets_content:
-            sent = re.sub('\s+', ' ', sent)  # remove newline chars
-            sent = re.sub('http\S*', '', sent)  # remove web url
-            sent = re.sub("['\"“”’‘@]", '', sent)    # remove single quote
-            sent = word_tokenize(str(sent))
-            sent = [item[0].lower() for item in filter(lambda item: item[1].startswith("N"), pos_tag(sent))]
-            yield(sent)
+    def _process_models(self, tweets: list):
+        for tweet in tweets:
+            yield(self._tweet2words(tweet))
 
-    def mark(self, tweet_content):
+    def _tweet2words(self, tweet_content):
+        tweet_content = re.sub('\s+', ' ', tweet_content)  # remove newline chars
+        tweet_content = re.sub('http\S*', '', tweet_content)  # remove web url
+        tweet_content = re.sub("['\"“”’‘@]", '', tweet_content)    # remove symbol quotes
+        tweet_content = word_tokenize(str(tweet_content))
+        tweet_content = [item[0].lower() for item in filter(lambda item: item[1].startswith("N"), pos_tag(tweet_content))]  # only include noun words
+        return tweet_content
+
+    def mark(self, tweet):
         pass
 
-    def is_high_quality(self, tweet_content):
+    def is_high_quality(self, tweet):
         pass
     
 
