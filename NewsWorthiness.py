@@ -4,6 +4,9 @@ import re
 from nltk import word_tokenize, pos_tag
 from functools import reduce
 from collections import Counter
+from nltk.corpus import stopwords
+stop_words = stopwords.words('english')
+stop_words.extend(['from', 'subject', 're', 'edu', 'use', 'not', 'would', 'say', 'could', '_', 'be', 'know', 'good', 'go', 'get', 'do', 'done', 'try', 'many', 'some', 'nice', 'thank', 'think', 'see', 'rather', 'easy', 'easily', 'lot', 'lack', 'make', 'want', 'seem', 'run', 'need', 'even', 'right', 'line', 'even', 'also', 'may', 'take', 'come'])
 
 
 class TweetNewsWorthiness:
@@ -39,8 +42,10 @@ class TweetNewsWorthiness:
         tweet_content = re.sub('\s+', ' ', tweet_content)  # remove newline chars
         tweet_content = re.sub('http\S*', '', tweet_content)  # remove web url
         tweet_content = re.sub("['\"“”’‘@]", '', tweet_content)    # remove symbol quotes
+        tweet_content = re.sub("^\w\s", '', tweet_content)
         tweet_content = word_tokenize(str(tweet_content))
         tweet_content = [item[0].lower() for item in filter(lambda item: item[1].startswith("N"), pos_tag(tweet_content))]  # only include noun words
+        # tweet_content = [item.lower() for item in tweet_content if item.lower() not in stop_words]
         return tweet_content
 
     def mark(self, tweet):

@@ -4,25 +4,29 @@ import re
 from nltk import word_tokenize, pos_tag
 from functools import reduce
 from collections import Counter, defaultdict
+from nltk.corpus import stopwords
+stop_words = stopwords.words('english')
+stop_words.extend(['from', 'subject', 're', 'edu', 'use', 'not', 'would', 'say', 'could', '_', 'be', 'know', 'good', 'go', 'get', 'do', 'done', 'try', 'many', 'some', 'nice', 'thank', 'think', 'see', 'rather', 'easy', 'easily', 'lot', 'lack', 'make', 'want', 'seem', 'run', 'need', 'even', 'right', 'line', 'even', 'also', 'may', 'take', 'come'])
 
 
 class TweetNewsWorthinessMarker:
-    # list_term = [
-    #     "bus", "transport", "buses", "railway", "tram", "trams", "underground",
-    #     "jam", "congestion", "accident", "accidents", "tfl", "traffic", "car",
-    #     "cars", "pedestrian"
-    # ]
-
     list_term = [
-        'news', 'report', 'journal', 'write', 'editor', 'analyst', 'analysis','media', 
-        'updates', 'stories', 'trader', 'investor', 'forex', 'stock', 'finance', 'market'
+        "bus", "transport", "buses", "railway", "tram", "trams", "underground",
+        "jam", "congestion", "accident", "accidents", "tfl", "traffic", "car",
+        "cars", "pedestrian", "emergency"
     ]
 
+
+    # list_term = [
+    #     'news', 'report', 'journal', 'write', 'editor', 'analyst', 'analysis','media', 
+    #     'updates', 'stories', 'trader', 'investor', 'forex', 'stock', 'finance'
+    # ]
+
     list_spam = [
-        "ebay", "bitcoin", "bitcoins", "btc", "wallet",
+        "ebay", "bitcoin", "bitcoins", "btc", "wallet", "money",
         'review', 'shopping', 'deal','sale', 'sales','link', 'click', 
         'marketing', 'promote', 'discount', 'products', 'store', 'diet', 'weight', 
-        'porn', 'followback', 'follow back', 'lucky', 'winners', 'prize', 'hiring'
+        'porn', 'followback', 'lucky', 'winners', 'prize', 'hiring'
     ]
 
     def __init__(self, high_quality_set: list, low_quality_set: list):
@@ -37,12 +41,12 @@ class TweetNewsWorthinessMarker:
         word_list = reduce(lambda x, y: x + y, data_words)  # connect a two-dimension list to one-dimension
         ctr = Counter(word_list)
 
-        return ctr
+        return ctr, len(word_list)
 
     def create_scoring_model(self):
-        self.bg_word_cnt = self.generate_word_cnt(self.bg_set)
-        self.hq_word_cnt = self.generate_word_cnt(self.high_quality_set)
-        self.lq_word_cnt = self.generate_word_cnt(self.low_quality_set)
+        self.bg_word_cnt, self.F_BG = self.generate_word_cnt(self.bg_set)
+        self.hq_word_cnt, self.F_HQ = self.generate_word_cnt(self.high_quality_set)
+        self.lq_word_cnt, self.F_LQ = self.generate_word_cnt(self.low_quality_set)
 
         self._calc_term_frequency()
         self._calc_term_score_table()
@@ -57,6 +61,7 @@ class TweetNewsWorthinessMarker:
         tweet_content = re.sub("['\"“”’‘@]", '', tweet_content)    # remove symbol quotes
         tweet_content = word_tokenize(str(tweet_content))
         tweet_content = [item[0].lower() for item in filter(lambda item: item[1].startswith("N"), pos_tag(tweet_content))]  # only include noun words
+        # tweet_content = [item.lower() for item in tweet_content if item.lower() not in stop_words]
         return tweet_content
 
     def _calc_term_frequency(self):
@@ -64,27 +69,22 @@ class TweetNewsWorthinessMarker:
             calculate term frequency for specific terms and raw frequency of all terms
             for both HQ and LQ data
         """
-        self.F_BG = 0
         self.f_bg = defaultdict(lambda: 0)
 
         # create raw frequency of all terms and term frequency for HQ data
-        self.F_HQ = 0
         self.f_hq = defaultdict(lambda: 0)
         for term in self.list_term:
             if term in self.hq_word_cnt.keys():
                 self.F_HQ += self.hq_word_cnt[term]
                 self.f_hq[term] += self.hq_word_cnt[term]
-                self.F_BG += self.bg_word_cnt[term]
                 self.f_bg[term] += self.bg_word_cnt[term]
 
         # create raw frequency of all terms and term frequency for LQ data
-        self.F_LQ = 0
         self.f_lq = defaultdict(lambda: 0)
         for term in self.list_spam:
             if term in self.lq_word_cnt.keys():
                 self.F_LQ += self.lq_word_cnt[term]
                 self.f_lq[term] += self.lq_word_cnt[term]
-                self.F_BG += self.bg_word_cnt[term]
                 self.f_bg[term] += self.bg_word_cnt[term]
 
     def _calc_term_score_table(self):

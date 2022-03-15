@@ -61,12 +61,11 @@ def plot_histmap(grids):
     for rows in grids:
         grid_units.extend([item for item in rows if item != 0])
 
-    print(max(grid_units))
     plt.figure(figsize=(10, 5.5) ,dpi=140)
-    plt.hist(grid_units, bins = 1400)
-    plt.gca().set(xlim=(0, 1400), ylabel='Number of Documents', xlabel='Document Word Count')
+    plt.hist(grid_units, bins = 100)
+    plt.gca().set(xlim=(0, 700), ylabel='Number of Documents', xlabel='Document Word Count')
     plt.tick_params(size=16)
-    plt.xticks(np.linspace(0,1400,8))
+    plt.xticks(np.linspace(0,700,8))
 
 if __name__ == '__main__':
     import json
