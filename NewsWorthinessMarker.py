@@ -64,40 +64,39 @@ class TweetNewsWorthinessMarker:
             calculate term frequency for specific terms and raw frequency of all terms
             for both HQ and LQ data
         """
+        self.F_BG = 0
+        self.f_bg = defaultdict(lambda: 0)
+
         # create raw frequency of all terms and term frequency for HQ data
         self.F_HQ = 0
         self.f_hq = defaultdict(lambda: 0)
-        self.F_HQ_BG = 0
-        self.f_hq_bg = defaultdict(lambda: 0)
         for term in self.list_term:
             if term in self.hq_word_cnt.keys():
                 self.F_HQ += self.hq_word_cnt[term]
                 self.f_hq[term] += self.hq_word_cnt[term]
-                self.F_HQ_BG += self.bg_word_cnt[term]
-                self.f_hq_bg[term] += self.bg_word_cnt[term]
+                self.F_BG += self.bg_word_cnt[term]
+                self.f_bg[term] += self.bg_word_cnt[term]
 
         # create raw frequency of all terms and term frequency for LQ data
         self.F_LQ = 0
         self.f_lq = defaultdict(lambda: 0)
-        self.F_LQ_BG = 0
-        self.f_lq_bg = defaultdict(lambda: 0)
         for term in self.list_spam:
             if term in self.lq_word_cnt.keys():
                 self.F_LQ += self.lq_word_cnt[term]
                 self.f_lq[term] += self.lq_word_cnt[term]
-                self.F_LQ_BG += self.bg_word_cnt[term]
-                self.f_lq_bg[term] += self.bg_word_cnt[term]
+                self.F_BG += self.bg_word_cnt[term]
+                self.f_bg[term] += self.bg_word_cnt[term]
 
     def _calc_term_score_table(self):
         self.S_HQ = defaultdict(lambda: 0)
         self.S_LQ = defaultdict(lambda: 0)
         for term in self.f_hq.keys():
-            R_HQ = (self.f_hq[term] / self.F_HQ) / (self.f_hq_bg[term] / self.F_HQ_BG)
+            R_HQ = (self.f_hq[term] / self.F_HQ) / (self.f_bg[term] / self.F_BG)
             # if R_HQ >= 2.0:
             self.S_HQ[term] = R_HQ
         
         for term in self.f_lq.keys():
-            R_LQ = (self.f_lq[term] / self.F_LQ) / (self.f_lq_bg[term] / self.F_LQ_BG)
+            R_LQ = (self.f_lq[term] / self.F_LQ) / (self.f_bg[term] / self.F_BG)
             # if R_LQ >= 2.0:
             self.S_LQ[term] = R_LQ
 
