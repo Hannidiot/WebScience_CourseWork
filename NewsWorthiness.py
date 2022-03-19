@@ -42,7 +42,6 @@ class TweetNewsWorthiness:
         tweet_content = re.sub('\s+', ' ', tweet_content)  # remove newline chars
         tweet_content = re.sub('http\S*', '', tweet_content)  # remove web url
         tweet_content = re.sub("['\"“”’‘@]", '', tweet_content)    # remove symbol quotes
-        tweet_content = re.sub("^\w\s", '', tweet_content)
         tweet_content = word_tokenize(str(tweet_content))
         tweet_content = [item[0].lower() for item in filter(lambda item: item[1].startswith("N"), pos_tag(tweet_content))]  # only include noun words
         # tweet_content = [item.lower() for item in tweet_content if item.lower() not in stop_words]

@@ -1,12 +1,14 @@
-import re
-
-
 from nltk import word_tokenize, pos_tag
 from functools import reduce
 from collections import Counter, defaultdict
-from nltk.corpus import stopwords
-stop_words = stopwords.words('english')
-stop_words.extend(['from', 'subject', 're', 'edu', 'use', 'not', 'would', 'say', 'could', '_', 'be', 'know', 'good', 'go', 'get', 'do', 'done', 'try', 'many', 'some', 'nice', 'thank', 'think', 'see', 'rather', 'easy', 'easily', 'lot', 'lack', 'make', 'want', 'seem', 'run', 'need', 'even', 'right', 'line', 'even', 'also', 'may', 'take', 'come'])
+
+import re
+import numpy as np
+import gensim
+
+# from nltk.corpus import stopwords
+# stop_words = stopwords.words('english')
+# stop_words.extend(['from', 'subject', 're', 'edu', 'use', 'not', 'would', 'say', 'could', '_', 'be', 'know', 'good', 'go', 'get', 'do', 'done', 'try', 'many', 'some', 'nice', 'thank', 'think', 'see', 'rather', 'easy', 'easily', 'lot', 'lack', 'make', 'want', 'seem', 'run', 'need', 'even', 'right', 'line', 'even', 'also', 'may', 'take', 'come'])
 
 
 class TweetNewsWorthinessMarker:
@@ -16,14 +18,8 @@ class TweetNewsWorthinessMarker:
         "cars", "pedestrian", "emergency"
     ]
 
-
-    # list_term = [
-    #     'news', 'report', 'journal', 'write', 'editor', 'analyst', 'analysis','media', 
-    #     'updates', 'stories', 'trader', 'investor', 'forex', 'stock', 'finance'
-    # ]
-
     list_spam = [
-        "ebay", "bitcoin", "bitcoins", "btc", "wallet", "money",
+        "ebay", "bitcoin", "bitcoins", "btc", "wallet", "money", "advertisement"
         'review', 'shopping', 'deal','sale', 'sales','link', 'click', 
         'marketing', 'promote', 'discount', 'products', 'store', 'diet', 'weight', 
         'porn', 'followback', 'lucky', 'winners', 'prize', 'hiring'
@@ -56,13 +52,17 @@ class TweetNewsWorthinessMarker:
             yield(self._tweet2words(tweet))
 
     def _tweet2words(self, tweet_content):
-        tweet_content = re.sub('\s+', ' ', tweet_content)  # remove newline chars
-        tweet_content = re.sub('http\S*', '', tweet_content)  # remove web url
-        tweet_content = re.sub("['\"“”’‘@]", '', tweet_content)    # remove symbol quotes
-        tweet_content = word_tokenize(str(tweet_content))
-        tweet_content = [item[0].lower() for item in filter(lambda item: item[1].startswith("N"), pos_tag(tweet_content))]  # only include noun words
+        # tweet_content = re.sub('\s+', ' ', tweet_content)  # remove newline chars
+        # tweet_content = re.sub('http\S*', '', tweet_content)  # remove web url
+        # tweet_content = re.sub("['\"“”’‘@]", '', tweet_content)    # remove symbol quotes
+        # tweet_content = word_tokenize(str(tweet_content))
+        # tweet_content = [item[0].lower() for item in filter(lambda item: item[1].startswith("N"), pos_tag(tweet_content))]  # only include noun words
         # tweet_content = [item.lower() for item in tweet_content if item.lower() not in stop_words]
-        return tweet_content
+        tweet_content = re.sub('\S*@\S*\s?', '', tweet_content)  # remove emails
+        tweet_content = re.sub('\s+', ' ', tweet_content)  # remove newline chars
+        tweet_content = re.sub("\'", "", tweet_content)  # remove single quotes
+        words = gensim.utils.simple_preprocess(str(tweet_content), deacc=True) 
+        return words
 
     def _calc_term_frequency(self):
         """
@@ -92,19 +92,30 @@ class TweetNewsWorthinessMarker:
         self.S_LQ = defaultdict(lambda: 0)
         for term in self.f_hq.keys():
             R_HQ = (self.f_hq[term] / self.F_HQ) / (self.f_bg[term] / self.F_BG)
-            # if R_HQ >= 2.0:
-            self.S_HQ[term] = R_HQ
+            if R_HQ >= 2.0:
+                self.S_HQ[term] = R_HQ
         
         for term in self.f_lq.keys():
             R_LQ = (self.f_lq[term] / self.F_LQ) / (self.f_bg[term] / self.F_BG)
-            # if R_LQ >= 2.0:
-            self.S_LQ[term] = R_LQ
+            if R_LQ >= 1.8:
+                self.S_LQ[term] = R_LQ
 
     def mark(self, tweet):
-        pass
+        words = self._tweet2words(tweet)
+        term_score = 1
+        spam_score = 1
+        for word in words:
+            if word in self.S_HQ.keys():
+                term_score += self.S_HQ[word]
+        
+        for word in words:
+            if word in self.S_LQ.keys():
+                spam_score += self.S_LQ[word]
+        
+        return np.log2(term_score/spam_score)
 
     def is_high_quality(self, tweet):
-        pass
+        return self.mark(tweet) > 0
     
 
 if __name__ == '__main__':
